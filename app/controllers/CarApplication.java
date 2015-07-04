@@ -28,9 +28,8 @@ public class CarApplication extends Controller {
         if(system == null) {
             system = CarFactory.startCarFactory();
         }
-        Thread.sleep(5000);
         ActorRef actor = system.actorFor("akka://carfactory/user/dataFetcher");
-        Timeout timeout = new Timeout(Duration.create(50, "seconds"));
+        Timeout timeout = new Timeout(Duration.create(5000, "seconds"));
         Future<Object> ask = Patterns.ask(actor, new CountRequest(), timeout);
         Object result = Await.result(ask, timeout.duration());
         return ok(result.toString());
