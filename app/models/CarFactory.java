@@ -6,8 +6,11 @@ import akka.actor.Props;
 import akka.pattern.Patterns;
 import akka.util.Timeout;
 import models.actors.*;
+import models.domain.CoachWork;
 import models.domain.CountRequest;
+import models.domain.Engine;
 import models.domain.Message;
+import models.domain.Wheel;
 import scala.concurrent.Await;
 import scala.concurrent.Future;
 import scala.concurrent.duration.Duration;
@@ -31,13 +34,16 @@ public class CarFactory {
     public static ActorSystem startCarFactory() {
         final ActorSystem system = ActorSystem.create("carfactory");
 
-        final ActorRef engineCreator = system.actorOf(Props.create(CreateEngineActor.class), "engineCreator");
-        final ActorRef coachworkCreator = system.actorOf(Props.create(CreateCoachworkActor.class), "coachworkCreator");
-        final ActorRef wheelCreator = system.actorOf(Props.create(CreateWheelActor.class), "wheelCreator");
+        ActorRef engineFilter = system.actorOf(Props.create(FilterEngineActor.class), "engineFilter");
+        ActorRef coachworkFilter = system.actorOf(Props.create(FilterCoachWorksActor.class), "coachworkFilter");
+        ActorRef wheelFilter = system.actorOf(Props.create(FilterWheelActor.class), "wheelFilter");
 
-        system.actorOf(Props.create(FilterEngineActor.class), "engineFilter");
-        system.actorOf(Props.create(FilterCoachWorksActor.class), "coachworkFilter");
-        system.actorOf(Props.create(FilterWheelActor.class), "wheelFilter");
+        final ActorRef engineCreator = system.actorOf(Props.create(CarPartCreateActor.class, Engine.class,
+                "akka://carfactory/user/" + engineFilter.path().name()), "engineCreator");
+        final ActorRef coachworkCreator = system.actorOf(Props.create(CarPartCreateActor.class, CoachWork.class,
+                "akka://carfactory/user/" + coachworkFilter.path().name()), "coachworkCreator");
+        final ActorRef wheelCreator = system.actorOf(Props.create(CarPartCreateActor.class, Wheel.class,
+                "akka://carfactory/user/" + wheelFilter.path().name()), "wheelCreator");
 
 
         system.actorOf(Props.create(PaintBlueActor.class), "paintBlueActor");
