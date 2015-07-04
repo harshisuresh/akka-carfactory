@@ -109,13 +109,13 @@ public class CarFactoryStats {
                 "coachworksCreated=" + coachworksCreated +
                 ", wheelsCreated=" + wheelsCreated +
                 ", enginesCreated=" + enginesCreated +
-                ", carsCreated=" + carsCreated +
                 ", faultlessWheels=" + faultlessWheels +
                 ", faultlessEngines=" + faultlessEngines +
                 ", faultlessCoachworks=" + faultlessCoachworks +
                 ", redCars=" + redCars +
                 ", greenCars=" + greenCars +
                 ", blueCars=" + blueCars +
+                ", carsCreated=" + carsCreated +
                 '}';
     }
 }
