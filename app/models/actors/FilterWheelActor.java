@@ -8,36 +8,23 @@ import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
 import models.domain.CountRequest;
 import models.domain.CountResponse;
+import models.domain.Engine;
 import models.domain.Wheel;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 
-public class FilterWheelActor extends AbstractActor {
+public class FilterWheelActor extends AbstractFilterActor<Wheel> {
 
-    private final LoggingAdapter LOG = Logging.getLogger(context().system(), this);
+    public FilterWheelActor(){}
 
-    private AtomicLong faultlessWheels = new AtomicLong();
-
-    public FilterWheelActor(){
-        receive(ReceiveBuilder.match(Wheel.class, this::filterWheel).
-                match(CountRequest.class, this::sendCount).build());
+    @Override
+    Class<Wheel> getReference() {
+        return Wheel.class;
     }
 
-    private void sendCount(CountRequest countRequest) {
-        getContext().sender().tell(new CountResponse(faultlessWheels.longValue()), getContext().self());
-    }
-
-    private void filterWheel(Wheel wheel){
-        if(wheel.isFaulty()){
-            LOG.info("Faulty wheel {}", wheel);
-            return;
-        } else {
-            LOG.info("Faultless wheel {}", wheel);
-            faultlessWheels.incrementAndGet();
-            final ActorRef carAssembler = getContext().actorFor("akka://carfactory/user/carAssembler");
-            final Inbox inbox = Inbox.create(getContext().system());
-            inbox.send(carAssembler, wheel);
-        }
+    @Override
+    String receiveActorName() {
+        return "akka://carfactory/user/carAssembler";
     }
 }

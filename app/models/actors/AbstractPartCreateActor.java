@@ -6,6 +6,7 @@ import akka.actor.Inbox;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import akka.japi.pf.ReceiveBuilder;
+import models.domain.CarPart;
 import models.domain.CountRequest;
 import models.domain.CountResponse;
 import models.domain.Message;
@@ -18,7 +19,7 @@ import org.springframework.util.ClassUtils;
 /**
  * Created by harshitha.suresh on 27/06/2015.
  */
-public abstract class AbstractPartCreateActor<T> extends AbstractActor {
+public abstract class AbstractPartCreateActor<T extends CarPart> extends AbstractActor {
     private AtomicLong count = new AtomicLong(0);
     private long MAX = 20;
     private final LoggingAdapter LOG = Logging.getLogger(context().system(), this);

@@ -3,7 +3,7 @@ package models.domain;
 /**
  * Created by harshitha.suresh on 27/06/2015.
  */
-public class CoachWork {
+public class CoachWork implements CarPart {
     private final String serialNumber;
     private final boolean faulty;
 
