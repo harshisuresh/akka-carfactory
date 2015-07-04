@@ -40,7 +40,6 @@ public class AssembleCarActor extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
-        LOG.info("Car Assembler");
         if(message instanceof Wheel){
             LOG.info("Received wheel current count {} wheels, {} coachworks and {} engines", wheels.size(), coachWorks.size(), engines.size());
             wheels.add((Wheel)message);
@@ -63,6 +62,7 @@ public class AssembleCarActor extends UntypedActor {
 
     private void assemble() throws InterruptedException {
         if(wheels.size() >= 4 && engines.size() >= 1 && coachWorks.size() >= 1) {
+            LOG.info("Assembled car");
             Car car = new Car(serialNumber++, engines.take(), coachWorks.take(), Arrays.asList(wheels.take(), wheels.take(), wheels.take(), wheels.take()));
             router.route(car, ActorRef.noSender());
             assembledCars.incrementAndGet();

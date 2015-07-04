@@ -34,6 +34,8 @@ public class CarFactory {
     public static ActorSystem startCarFactory() {
         final ActorSystem system = ActorSystem.create("carfactory");
 
+
+
         ActorRef engineFilter = system.actorOf(Props.create(FilterEngineActor.class), "engineFilter");
         ActorRef coachworkFilter = system.actorOf(Props.create(FilterCoachWorksActor.class), "coachworkFilter");
         ActorRef wheelFilter = system.actorOf(Props.create(FilterWheelActor.class), "wheelFilter");
@@ -45,12 +47,11 @@ public class CarFactory {
         final ActorRef wheelCreator = system.actorOf(Props.create(CarPartCreateActor.class, Wheel.class,
                 "akka://carfactory/user/" + wheelFilter.path().name()), "wheelCreator");
 
-
+        system.actorOf(Props.create(AssembleCarActor.class), "carAssembler");
         system.actorOf(Props.create(PaintBlueActor.class), "paintBlueActor");
         system.actorOf(Props.create(PaintGreenActor.class), "paintGreenActor");
         system.actorOf(Props.create(PaintRedActor.class), "paintRedActor");
 
-        system.actorOf(Props.create(AssembleCarActor.class), "carAssembler");
         system.actorOf(Props.create(DataFetcher.class), "dataFetcher");
         system.actorOf(Props.create(MergerActor.class), "carMerger");
         engineCreator.tell(Message.START, ActorRef.noSender());
