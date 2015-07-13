@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 
 public class AssembleCarActor extends UntypedActor {
-    public static final int CAPACITY = 100;
+    public static final int CAPACITY = 1000;
     Router router;
     {
 
