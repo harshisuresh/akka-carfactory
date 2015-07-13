@@ -1,3 +1,3 @@
-# Getting started with Play (Java)
+# Car-factory
 
-This project demonstrate how to create a simple CRUD application with Play. A screencast to the project exist on [playframework.com](http://playframework.com)
+Processes 100,000 parts in around 4-5 seconds creating around 25000 cars
