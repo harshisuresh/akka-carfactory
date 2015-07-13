@@ -3,4 +3,7 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.CarApplication.index()
+GET        /          controllers.CarApplication.index()
+#GET        /ws        controllers.Application.ws
+
+GET     /assets/*file               controllers.Assets.at(path="/public", file)

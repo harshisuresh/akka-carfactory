@@ -12,6 +12,7 @@ import models.domain.CoachWork;
 import models.domain.CountRequest;
 import models.domain.CountResponse;
 import models.domain.Engine;
+import models.domain.Message;
 import models.domain.Wheel;
 
 import java.util.Arrays;
@@ -21,20 +22,22 @@ import java.util.concurrent.atomic.AtomicLong;
 
 
 public class AssembleCarActor extends UntypedActor {
+    public static final int CAPACITY = 100;
     Router router;
     {
 
         ActorRef r1 = getContext().actorFor("akka://carfactory/user/paintBlueActor");
         ActorRef r2 = getContext().actorFor("akka://carfactory/user/paintGreenActor");
         ActorRef r3 = getContext().actorFor("akka://carfactory/user/paintRedActor");
+
         router = new Router(new RandomRoutingLogic(), Arrays.asList(new ActorRefRoutee(r1), new ActorRefRoutee(r2), new ActorRefRoutee(r3)));
     }
 
     private final LoggingAdapter LOG = Logging.getLogger(context().system(), this);
     private AtomicLong assembledCars = new AtomicLong();
-    private BlockingQueue<Wheel> wheels = new ArrayBlockingQueue<Wheel>(10000);
-    private BlockingQueue<Engine> engines = new ArrayBlockingQueue<Engine>(10000);
-    private BlockingQueue<CoachWork> coachWorks = new ArrayBlockingQueue<CoachWork>(10000);
+    private BlockingQueue<Wheel> wheels = new ArrayBlockingQueue<Wheel>(CAPACITY);
+    private BlockingQueue<Engine> engines = new ArrayBlockingQueue<Engine>(CAPACITY);
+    private BlockingQueue<CoachWork> coachWorks = new ArrayBlockingQueue<CoachWork>(CAPACITY);
     private Long serialNumber = 1L;
 
 
@@ -43,16 +46,31 @@ public class AssembleCarActor extends UntypedActor {
         if(message instanceof Wheel){
             LOG.info("Received wheel current count {} wheels, {} coachworks and {} engines", wheels.size(), coachWorks.size(), engines.size());
             wheels.add((Wheel)message);
+            if(wheels.remainingCapacity() <= 0.2*CAPACITY){
+                getContext().actorFor("akka://carfactory/user/wheelCreator").tell(Message.SLOW_DOWN, ActorRef.noSender());
+            } else if(wheels.remainingCapacity() > 0.8*CAPACITY){
+                getContext().actorFor("akka://carfactory/user/wheelCreator").tell(Message.SPEED_UP, ActorRef.noSender());
+            }
             assemble();
         }
         else if(message instanceof Engine){
-            LOG.info("Received engine current count {} wheels, {} coachworks and {} engines", wheels.size(), coachWorks.size(), engines.size());
+            LOG.info("Received engine current count {} wheels, {} coachworks a¡nd {} engines", wheels.size(), coachWorks.size(), engines.size());
             engines.add((Engine)message);
+            if(engines.remainingCapacity() <= 0.2*CAPACITY){
+                getContext().actorFor("akka://carfactory/user/engineCreator").tell(Message.SLOW_DOWN, ActorRef.noSender());
+            } else if(wheels.remainingCapacity() > 0.8*CAPACITY){
+                getContext().actorFor("akka://carfactory/user/engineCreator").tell(Message.SPEED_UP, ActorRef.noSender());
+            }
             assemble();
         }
         else if(message instanceof CoachWork){
             LOG.info("Received coachwork current count {} wheels, {} coachworks and {} engines", wheels.size(), coachWorks.size(), engines.size());
             coachWorks.add((CoachWork)message);
+            if(coachWorks.remainingCapacity() <= 0.2*CAPACITY){
+                getContext().actorFor("akka://carfactory/user/coachworkCreator").tell(Message.SLOW_DOWN, ActorRef.noSender());
+            } else if(wheels.remainingCapacity() > 0.8*CAPACITY){
+                getContext().actorFor("akka://carfactory/user/coachworkCreator").tell(Message.SPEED_UP, ActorRef.noSender());
+            }
             assemble();
         }
         else if(message instanceof CountRequest) {
@@ -64,6 +82,7 @@ public class AssembleCarActor extends UntypedActor {
         if(wheels.size() >= 4 && engines.size() >= 1 && coachWorks.size() >= 1) {
             LOG.info("Assembled car");
             Car car = new Car(serialNumber++, engines.take(), coachWorks.take(), Arrays.asList(wheels.take(), wheels.take(), wheels.take(), wheels.take()));
+
             router.route(car, ActorRef.noSender());
             assembledCars.incrementAndGet();
         }
