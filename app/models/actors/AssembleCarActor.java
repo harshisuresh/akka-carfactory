@@ -32,14 +32,17 @@ public class AssembleCarActor extends UntypedActor {
 
     private final LoggingAdapter LOG = Logging.getLogger(context().system(), this);
     private AtomicLong assembledCars = new AtomicLong();
-    private BlockingQueue<Wheel> wheels = new ArrayBlockingQueue<Wheel>(10000);
-    private BlockingQueue<Engine> engines = new ArrayBlockingQueue<Engine>(10000);
-    private BlockingQueue<CoachWork> coachWorks = new ArrayBlockingQueue<CoachWork>(10000);
+    private BlockingQueue<Wheel> wheels = new ArrayBlockingQueue<Wheel>(100000);
+    private BlockingQueue<Engine> engines = new ArrayBlockingQueue<Engine>(100000);
+    private BlockingQueue<CoachWork> coachWorks = new ArrayBlockingQueue<CoachWork>(100000);
     private Long serialNumber = 1L;
-
+    private Long startTime, endTime;
 
     @Override
     public void onReceive(Object message) throws Exception {
+        if(startTime == null){
+            startTime = System.currentTimeMillis();
+        }
         if(message instanceof Wheel){
             LOG.info("Received wheel current count {} wheels, {} coachworks and {} engines", wheels.size(), coachWorks.size(), engines.size());
             wheels.add((Wheel)message);
@@ -51,7 +54,7 @@ public class AssembleCarActor extends UntypedActor {
             assemble();
         }
         else if(message instanceof CoachWork){
-            LOG.info("Received coachwork current count {} wheels, {} coachworks and {} engines", wheels.size(), coachWorks.size(), engines.size());
+           LOG.info("Received coachwork current count {} wheels, {} coachworks and {} engines", wheels.size(), coachWorks.size(), engines.size());
             coachWorks.add((CoachWork)message);
             assemble();
         }
@@ -66,6 +69,8 @@ public class AssembleCarActor extends UntypedActor {
             Car car = new Car(serialNumber++, engines.take(), coachWorks.take(), Arrays.asList(wheels.take(), wheels.take(), wheels.take(), wheels.take()));
             router.route(car, ActorRef.noSender());
             assembledCars.incrementAndGet();
+            endTime = System.currentTimeMillis();
+            LOG.info("Time taken so far{}", endTime-startTime );
         }
     }
 }
