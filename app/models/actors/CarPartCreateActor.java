@@ -60,7 +60,9 @@ public class CarPartCreateActor<T extends CarPart> extends AbstractActor {
             LOG.info("Start producing {}", ClassUtils.getShortName(carPartClass));
             produceParts();
         } else if(Message.SLOW_DOWN.equals(message)){
-            rateLimiter.setRate(rateLimiter.getRate()/2);
+            double permitsPerSecond = rateLimiter.getRate() / 2;
+            LOG.info("Reducing permit permit {}", permitsPerSecond );
+            rateLimiter.setRate(permitsPerSecond);
             LOG.info("Slowing down {}", ClassUtils.getShortName(carPartClass) );
         } else if(Message.SPEED_UP.equals(message)){
             double permitsPerSecond = rateLimiter.getRate() * 2;
